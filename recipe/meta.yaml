@@ -1,23 +1,23 @@
 {% set name = "PyMUMPS" %}
-{% set version = "0.3.2" %}
+{% set version = "0.3.3" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
-  
+
 source:
   fn: {{ version }}.tar.gz
-  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: f290ec4850098f108fb91cb9e7fa07302ebf5076e4329f8e6ea4924de8ba35df
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name | lower }}-{{ version }}.tar.gz
+  sha256: dfa9471f045f03aad133c60d4aaeffb211b568e85940fa5d44556adcaefbd76c
 
 build:
-  number: 1016
+  number: 0
   script: |
     pip install . -vv --global-option="build_ext" \
        --global-option="-I$PREFIX/include" \
        --global-option="-L$PREFIX/lib"
   skip: true  # [win]
-  
+
 requirements:
   build:
     - {{ compiler('c') }}
