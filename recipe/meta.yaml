@@ -1,51 +1,70 @@
-{% set name = "PyMUMPS" %}
-{% set version = "0.3.2" %}
+{% set name = "pymumps" %}
+{% set version = "0.4.0" %}
 
 package:
-  name: {{ name|lower }}
+  name: {{ name }}
   version: {{ version }}
   
 source:
   fn: {{ version }}.tar.gz
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: f290ec4850098f108fb91cb9e7fa07302ebf5076e4329f8e6ea4924de8ba35df
+  sha256: 1b55cdc7c3998fda874d8078d2348228a6759cc5bed00f3f1fc1745ce727e43d
 
 build:
-  number: 1016
+  number: 0
   script: |
-    pip install . -vv --global-option="build_ext" \
-       --global-option="-I$PREFIX/include" \
-       --global-option="-L$PREFIX/lib"
-  skip: true  # [win]
+    export SKBUILD_CMAKE_GENERATOR=Ninja
+    pip install -v -C build.verbose=true -C cmake.define.MUMPS_ROOT=$PREFIX .           # [osx or linux]
+    pip install -v -C build.verbose=true -C cmake.define.MUMPS_ROOT=%PREFIX%\Library .  # [win]
   
 requirements:
   build:
+    - python                              # [build_platform != target_platform]
+    - cross-python_{{ target_platform }}  # [build_platform != target_platform]
     - {{ compiler('c') }}
-    - {{ stdlib("c") }}
+    - {{ stdlib('c') }}
     - {{ compiler('cxx') }}
+    - cmake >=3.15
+    - make                                 # [not win]
   host:
     - cython
     - python
-    - mumps-mpi
-    - mumps-include
-    - setuptools
+    - mumps-seq      # [win]
+    - mumps-mpi      # [osx or linux]
+    - mumps-include  # [osx or linux]
     - mpi4py
     - pip
+    - scikit-build-core
   run:
     - python
-    - scipy
-    - setuptools
-    - mumps-mpi
+    - numpy
+    - mumps-seq      # [win]
+    - mumps-mpi      # [osx or linux]
     - mpi4py
 
 test:
+  source_files:
+    - tests
   imports:
     - mumps
+  requires:
+    - cython
+    - mumps-seq      # [win]
+    - mumps-mpi      # [osx or linux]
+    - mumps-include  # [osx or linux]
+    - python
+    - mpi4py
+    - numpy
+    - scipy
+    - pytest
+  commands:
+    - pytest
+
 
 about:
   home: https://github.com/PyMUMPS/pymumps.git
   license: BSD-3-Clause
-  license_file: COPYING
+  license_file: LICENSE.txt
   summary: 'PyMUMPS: Python parallel sparse direct solver'
 
 extra:
